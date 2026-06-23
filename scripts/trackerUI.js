@@ -4,9 +4,9 @@ export function injectTrackerUI() {
   const container = document.createElement('div');
   container.id = 'card-tracker-container';
   container.style.position = 'fixed';
-  container.style.top = '50%';
-  container.style.right = '10px';
-  container.style.transform = 'translateY(65%)';
+  container.style.top = '0px';
+  container.style.right = '242px';
+  container.style.transform = '';
   container.style.backgroundColor = '#f9f9f9';
   container.style.border = '1px solid #ddd';
   container.style.borderRadius = '10px';
@@ -25,12 +25,14 @@ export function injectTrackerUI() {
   header.style.textAlign = 'center';
   header.style.borderBottom = '1px solid #ccc';
   header.style.borderRadius = '10px';
+  header.style.userSelect = 'none'; // Prevent text selection on double-click
 
   header.textContent = 'Card Tracker';
   container.appendChild(header);
 
   // Tracker content
   const content = document.createElement('div');
+  content.id = 'card-tracker-content'; // Track this element by ID for future reference
   content.innerHTML = `
     <div id="tracker-list" style="max-height: 250px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px; padding: 10px; background-color: #fff;">
       <p style="text-align: center; color: #999;">No cards tracked yet.</p>
@@ -59,7 +61,8 @@ export function injectTrackerUI() {
         Clear All
       </button>
     </div>
-  `;
+  `;  
+  content.style.display = 'none'; // start hidden
   container.appendChild(content);
 
   document.body.appendChild(container);
@@ -80,6 +83,36 @@ export function injectTrackerUI() {
   const clearCardsBtn = container.querySelector('#clear-cards-btn');
   clearCardsBtn.addEventListener('click', () => {
         stateManager.clearOpponentTrackedCards();
+  });
+
+    // Double-click header to minimize/maximize
+  let contentMinimized = true;
+  let originalPosition = null;
+
+  header.addEventListener('dblclick', () => {
+    contentMinimized = !contentMinimized;
+    const content = document.getElementById('card-tracker-content');
+
+    // The popup "jumps" when we minimize it if we haven't dragged it,
+    // so we store the original position to fix that.
+    // Use container.style.left to check if it's in its original position.
+    if (!container.style.left && !originalPosition) {
+      const rect = container.getBoundingClientRect();
+      originalPosition = {
+        top: 0,
+        left: 1352
+      };
+    }
+
+    // Toggle content visibility
+    content.style.display = contentMinimized ? 'none' : 'block';
+
+    // Apply position fixing only if we haven't manually dragged
+    if (!container.style.left && originalPosition) {
+      container.style.transform = '';
+      container.style.top = `${originalPosition.top}px`;
+      container.style.left = `${originalPosition.left}px`;
+    }
   });
 }
 
